@@ -30,6 +30,16 @@ interface FiltersState extends DashboardFilters {
 const DEFAULT_REDE = "Total";
 const DEFAULT_VARIAVEL = "Matrícula";
 
+const VARIAVEIS_DEMOGRAFICAS = new Set([
+  "Pessoas Alfabetizadas",
+  "Pessoas Total",
+  "Taxa de Alfabetização",
+  "Taxa de Analfabetismo",
+]);
+
+const REDE_DEMOGRAFICA = "Não se aplica";
+const ETAPA_DEMOGRAFICA = "Pessoas de 15 anos ou mais de idade";
+
 export const useFiltersStore = create<FiltersState>((set, get) => ({
   municipios: [],
   anoInicio: null,
@@ -47,7 +57,27 @@ export const useFiltersStore = create<FiltersState>((set, get) => ({
   setAnoFim: (anoFim) => set({ anoFim, pagina: 1 }),
   setRede: (rede) => set({ rede, pagina: 1 }),
   setEtapa: (etapa) => set({ etapa, pagina: 1 }),
-  setVariavel: (variavel) => set({ variavel, pagina: 1 }),
+  setVariavel: (variavel) => {
+    if (VARIAVEIS_DEMOGRAFICAS.has(variavel)) {
+      set({
+        variavel,
+        rede: REDE_DEMOGRAFICA,
+        etapa: ETAPA_DEMOGRAFICA,
+        pagina: 1,
+      });
+      return;
+    }
+
+    const current = get();
+    set({
+      variavel,
+      rede:
+        current.rede === REDE_DEMOGRAFICA ? DEFAULT_REDE : current.rede,
+      etapa:
+        current.etapa === ETAPA_DEMOGRAFICA ? "" : current.etapa,
+      pagina: 1,
+    });
+  },
   setRankingAno: (rankingAno) => set({ rankingAno }),
   setQuebraDimensao: (quebraDimensao) => set({ quebraDimensao }),
   setPagina: (pagina) => set({ pagina }),
