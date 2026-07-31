@@ -1,17 +1,33 @@
+import { AlertCircleIcon, InboxIcon, LoaderCircleIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Spinner } from "@/components/ui/spinner";
 
 export function LoadingState({ label = "Carregando…" }: { label?: string }) {
   return (
     <div
-      className="flex min-h-32 items-center justify-center gap-3 rounded-lg border border-dashed border-line bg-paper-elevated/60 px-4 py-8 text-ink-muted"
+      className="flex min-h-32 items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-8 text-muted-foreground"
       role="status"
       aria-live="polite"
     >
-      <span
-        className="inline-block size-4 animate-spin rounded-full border-2 border-brand border-r-transparent"
-        aria-hidden
-      />
-      <span>{label}</span>
+      <Spinner className="size-4" />
+      <span className="text-sm">{label}</span>
     </div>
   );
 }
@@ -24,10 +40,15 @@ export function EmptyState({
   description?: string;
 }) {
   return (
-    <div className="rounded-lg border border-line bg-warning-soft px-4 py-6 text-center">
-      <p className="font-medium text-ink">{title}</p>
-      <p className="mt-1 text-sm text-ink-muted">{description}</p>
-    </div>
+    <Empty className="border border-dashed border-border bg-muted/30">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <InboxIcon />
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }
 
@@ -39,19 +60,18 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-danger/30 bg-danger-soft px-4 py-6 text-center">
-      <p className="font-medium text-danger">Erro ao carregar</p>
-      <p className="mt-1 text-sm text-ink-muted">{message}</p>
-      {onRetry ? (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-3 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"
-        >
-          Tentar de novo
-        </button>
-      ) : null}
-    </div>
+    <Alert variant="destructive">
+      <AlertCircleIcon />
+      <AlertTitle>Erro ao carregar</AlertTitle>
+      <AlertDescription className="flex flex-col gap-3">
+        <span>{message}</span>
+        {onRetry ? (
+          <Button type="button" variant="outline" size="sm" onClick={onRetry} className="w-fit">
+            Tentar de novo
+          </Button>
+        ) : null}
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -67,17 +87,22 @@ export function Panel({
   action?: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-line bg-paper-elevated p-4 shadow-sm sm:p-5">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="font-display text-lg font-semibold text-ink">{title}</h2>
-          {subtitle ? (
-            <p className="mt-0.5 text-sm text-ink-muted">{subtitle}</p>
-          ) : null}
-        </div>
-        {action}
-      </div>
-      {children}
-    </section>
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle className="font-heading text-lg">{title}</CardTitle>
+        {subtitle ? <CardDescription>{subtitle}</CardDescription> : null}
+        {action ? <CardAction>{action}</CardAction> : null}
+      </CardHeader>
+      <CardContent className="pt-(--card-spacing)">{children}</CardContent>
+    </Card>
+  );
+}
+
+export function InlineUpdating() {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <LoaderCircleIcon className="size-3.5 animate-spin" />
+      Atualizando…
+    </span>
   );
 }
