@@ -39,7 +39,14 @@ Componentes em `src/components/ui/`:
 - Table, Pagination
 - **Chart** (`ChartContainer`, `ChartTooltip`, `ChartLegend`) sobre Recharts
 
-Tema unificado via tokens CSS (`--primary`, `--chart-*`, etc.) em `src/index.css` — paleta teal alinhada ao produto.
+Tema unificado via tokens CSS (`--primary`, `--chart-*`, etc.) em `src/index.css`.
+
+### Suspense e Error Boundaries
+
+- Seções do dashboard usam `useSuspenseQuery` + `<Suspense>` com **Skeleton** do shadcn
+- Cada bloco (cards, gráficos, tabela) tem `ErrorBoundary` isolado via `QuerySection` + `QueryErrorResetBoundary` (TanStack Query)
+- Falha em um gráfico não derruba o restante da página
+
 
 ## Telas
 
