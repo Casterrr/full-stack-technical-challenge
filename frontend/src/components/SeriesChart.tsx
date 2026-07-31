@@ -1,25 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { ApiError, fetchSeries } from "@/api/client";
+import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { ApiError, fetchSeries } from "../api/client";
-import { PERCENTUAL_VARIAVEIS } from "../api/types";
-import { useDebouncedFilters } from "../hooks/useDebouncedFilters";
-import { formatDecimal, formatNumber, formatPercent } from "../lib/format";
-import { filtersToQuery } from "../store/filters";
+  type ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
+import { formatNumber, formatPercent } from "@/lib/format";
+import { filtersToQuery } from "@/store/filters";
 import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
 
 export function SeriesChart() {
   const filters = useDebouncedFilters();
   const base = filtersToQuery(filters);
   const isPercent = PERCENTUAL_VARIAVEIS.has(filters.variavel);
+
+  const chartConfig = {
+    valor: {
+      label: filters.variavel,
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["series", filters.variavel, base],
@@ -55,54 +61,52 @@ export function SeriesChart() {
         />
       ) : null}
       {data && !data.semDados && data.serie.length > 0 ? (
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="space-y-2">
+          <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
             <LineChart
+              accessibilityLayer
               data={data.serie}
               margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#d5e0db" />
+              <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="ano"
-                tick={{ fill: "#4a5c57", fontSize: 12 }}
-                label={{
-                  value: "Ano",
-                  position: "insideBottom",
-                  offset: -2,
-                  fill: "#4a5c57",
-                }}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
               />
               <YAxis
-                tick={{ fill: "#4a5c57", fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                width={64}
                 tickFormatter={(v: number) =>
                   isPercent ? formatPercent(v, 1) : formatNumber(v)
                 }
-                width={72}
               />
-              <Tooltip
-                formatter={(value) => {
-                  const num = Number(value);
-                  return [
-                    isPercent ? formatPercent(num) : formatDecimal(num, 0),
-                    filters.variavel,
-                  ];
-                }}
-                labelFormatter={(label) => `Ano ${label}`}
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value) =>
+                      isPercent
+                        ? formatPercent(Number(value))
+                        : formatNumber(Number(value))
+                    }
+                  />
+                }
               />
-              <Legend />
+              <ChartLegend content={<ChartLegendContent />} />
               <Line
                 type="monotone"
                 dataKey="valor"
-                name={filters.variavel}
-                stroke="#0f5c4c"
+                stroke="var(--color-valor)"
                 strokeWidth={2.5}
                 dot={{ r: 3 }}
                 connectNulls={false}
               />
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
           {data.meta?.agregacao ? (
-            <p className="mt-2 text-xs text-ink-muted">
+            <p className="text-xs text-muted-foreground">
               Agregação: {data.meta.agregacao.replaceAll("_", " ")}
             </p>
           ) : null}

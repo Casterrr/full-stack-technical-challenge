@@ -1,23 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { ApiError, fetchRanking } from "@/api/client";
+import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { ApiError, fetchRanking } from "../api/client";
-import { PERCENTUAL_VARIAVEIS } from "../api/types";
-import { useDebouncedFilters } from "../hooks/useDebouncedFilters";
-import { formatDecimal, formatNumber, formatPercent } from "../lib/format";
+  type ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
+import { formatNumber, formatPercent } from "@/lib/format";
 import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
 
 export function RankingChart() {
   const { variavel, rede, etapa, rankingAno } = useDebouncedFilters();
   const isPercent = PERCENTUAL_VARIAVEIS.has(variavel);
+
+  const chartConfig = {
+    valor: {
+      label: variavel,
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["ranking", variavel, rankingAno, rede, etapa],
@@ -64,52 +70,50 @@ export function RankingChart() {
         <EmptyState
           title="Sem dado no período"
           description={
-            data?.mensagem ??
-            "Nenhum município com valor para este recorte."
+            data?.mensagem ?? "Nenhum município com valor para este recorte."
           }
         />
       ) : null}
       {data && !data.semDados && data.ranking.length > 0 ? (
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data.ranking}
-              layout="vertical"
-              margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#d5e0db" />
-              <XAxis
-                type="number"
-                tick={{ fill: "#4a5c57", fontSize: 12 }}
-                tickFormatter={(v: number) =>
-                  isPercent ? formatPercent(v, 1) : formatNumber(v)
-                }
-              />
-              <YAxis
-                type="category"
-                dataKey="municipio"
-                width={120}
-                tick={{ fill: "#4a5c57", fontSize: 11 }}
-              />
-              <Tooltip
-                formatter={(value) => {
-                  const num = Number(value);
-                  return [
-                    isPercent ? formatPercent(num) : formatDecimal(num, 0),
-                    variavel,
-                  ];
-                }}
-              />
-              <Legend />
-              <Bar
-                dataKey="valor"
-                name={variavel}
-                fill="#0f5c4c"
-                radius={[0, 4, 4, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartContainer config={chartConfig} className="aspect-auto h-80 w-full">
+          <BarChart
+            accessibilityLayer
+            data={data.ranking}
+            layout="vertical"
+            margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+          >
+            <CartesianGrid horizontal={false} />
+            <XAxis
+              type="number"
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v: number) =>
+                isPercent ? formatPercent(v, 1) : formatNumber(v)
+              }
+            />
+            <YAxis
+              type="category"
+              dataKey="municipio"
+              width={120}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 11 }}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) =>
+                    isPercent
+                      ? formatPercent(Number(value))
+                      : formatNumber(Number(value))
+                  }
+                />
+              }
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+            <Bar dataKey="valor" fill="var(--color-valor)" radius={4} />
+          </BarChart>
+        </ChartContainer>
       ) : null}
     </Panel>
   );
