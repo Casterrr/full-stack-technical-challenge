@@ -189,7 +189,7 @@ function BreakdownBars({
         <BarChart
           accessibilityLayer
           data={data}
-          margin={{ top: 8, right: 12, left: 12, bottom: 56 }}
+          margin={{ top: 8, right: 12, left: 12, bottom: 64 }}
         >
           <CartesianGrid vertical={false} />
           <XAxis
@@ -207,7 +207,7 @@ function BreakdownBars({
                   ? "Rede de ensino"
                   : "Etapa de ensino",
               position: "insideBottom",
-              offset: -2,
+              offset: -8,
               fill: "var(--muted-foreground)",
               fontSize: 12,
             }}
@@ -239,7 +239,10 @@ function BreakdownBars({
               />
             }
           />
-          <ChartLegend content={<ChartLegendContent />} />
+          <ChartLegend
+            verticalAlign="top"
+            content={<ChartLegendContent verticalAlign="top" />}
+          />
           <Bar dataKey="valor" fill="var(--color-valor)" radius={4} />
         </BarChart>
       </ChartContainer>

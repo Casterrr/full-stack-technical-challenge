@@ -99,7 +99,7 @@ function RankingChartContent({
           accessibilityLayer
           data={data.ranking}
           layout="vertical"
-          margin={{ top: 8, right: 16, left: 8, bottom: 28 }}
+          margin={{ top: 8, right: 16, left: 8, bottom: 36 }}
         >
           <CartesianGrid horizontal={false} />
           <XAxis
@@ -112,7 +112,7 @@ function RankingChartContent({
             label={{
               value: variavel,
               position: "insideBottom",
-              offset: -16,
+              offset: -20,
               fill: "var(--muted-foreground)",
               fontSize: 12,
             }}
@@ -144,7 +144,10 @@ function RankingChartContent({
               />
             }
           />
-          <ChartLegend content={<ChartLegendContent />} />
+          <ChartLegend
+            verticalAlign="top"
+            content={<ChartLegendContent verticalAlign="top" />}
+          />
           <Bar dataKey="valor" fill="var(--color-valor)" radius={4} />
         </BarChart>
       </ChartContainer>

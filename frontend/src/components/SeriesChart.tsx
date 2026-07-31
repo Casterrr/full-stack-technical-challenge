@@ -58,7 +58,7 @@ export function SeriesChart() {
           <LineChart
             accessibilityLayer
             data={data.serie}
-            margin={{ top: 8, right: 12, left: 12, bottom: 28 }}
+            margin={{ top: 8, right: 12, left: 12, bottom: 36 }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -69,7 +69,7 @@ export function SeriesChart() {
               label={{
                 value: "Ano",
                 position: "insideBottom",
-                offset: -16,
+                offset: -20,
                 fill: "var(--muted-foreground)",
                 fontSize: 12,
               }}
@@ -101,7 +101,10 @@ export function SeriesChart() {
                 />
               }
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend
+              verticalAlign="top"
+              content={<ChartLegendContent verticalAlign="top" />}
+            />
             <Line
               type="monotone"
               dataKey="valor"
