@@ -1,6 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { ApiError, fetchSeries } from "@/api/client";
+import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
   type ChartConfig,
@@ -10,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useSeriesQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { filtersToQuery } from "@/store/filters";
@@ -27,14 +27,9 @@ export function SeriesChart() {
     },
   } satisfies ChartConfig;
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["series", filters.variavel, base],
-    queryFn: () =>
-      fetchSeries({
-        variavel: filters.variavel,
-        ...base,
-      }),
-    enabled: Boolean(filters.variavel),
+  const { data, isLoading, isError, error, refetch } = useSeriesQuery({
+    variavel: filters.variavel,
+    ...base,
   });
 
   return (

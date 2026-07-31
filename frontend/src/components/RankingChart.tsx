@@ -1,6 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ApiError, fetchRanking } from "@/api/client";
+import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
   type ChartConfig,
@@ -10,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useRankingQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
@@ -25,18 +25,16 @@ export function RankingChart() {
     },
   } satisfies ChartConfig;
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["ranking", variavel, rankingAno, rede, etapa],
-    queryFn: () =>
-      fetchRanking({
-        variavel,
-        ano: rankingAno!,
-        rede,
-        etapa: etapa || undefined,
-        limite: 15,
-      }),
-    enabled: Boolean(variavel && rankingAno),
-  });
+  const { data, isLoading, isError, error, refetch } = useRankingQuery(
+    {
+      variavel,
+      ano: rankingAno ?? 0,
+      rede,
+      etapa: etapa || undefined,
+      limite: 15,
+    },
+    { enabled: Boolean(variavel && rankingAno) },
+  );
 
   return (
     <Panel

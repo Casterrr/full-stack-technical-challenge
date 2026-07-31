@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { ApiError, fetchDados } from "@/api/client";
+import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDadosQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { filtersToQuery, useFiltersStore } from "@/store/filters";
@@ -36,22 +36,14 @@ export function DataTable() {
   const setTamanho = useFiltersStore((s) => s.setTamanho);
   const base = filtersToQuery(filters);
 
-  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: [
-      "dados",
-      base,
-      filters.variavel,
-      filters.pagina,
-      filters.tamanho,
-    ],
-    queryFn: () =>
-      fetchDados({
-        ...base,
-        variavel: filters.variavel || undefined,
-        pagina: filters.pagina,
-        tamanho: filters.tamanho,
-      }),
-  });
+  const { data, isLoading, isError, error, refetch, isFetching } = useDadosQuery(
+    {
+      ...base,
+      variavel: filters.variavel || undefined,
+      pagina: filters.pagina,
+      tamanho: filters.tamanho,
+    },
+  );
 
   const totalPaginas = data
     ? Math.max(1, Math.ceil(data.total / data.tamanho))

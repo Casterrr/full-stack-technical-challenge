@@ -1,6 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ApiError, fetchFiltros, fetchSeries } from "@/api/client";
+import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
   type ChartConfig,
@@ -10,6 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useFiltrosQuery, useQuebraQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
@@ -49,53 +49,29 @@ export function BreakdownChart() {
     },
   } satisfies ChartConfig;
 
-  const filtrosQuery = useQuery({
-    queryKey: ["filtros"],
-    queryFn: fetchFiltros,
-  });
+  const filtrosQuery = useFiltrosQuery();
 
   const categorias =
     quebraDimensao === "rede"
       ? (filtrosQuery.data?.redes ?? []).filter((r) => REDES_FOLHA.has(r))
       : (filtrosQuery.data?.etapas ?? []).filter((e) => ETAPAS_BASICAS.has(e));
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: [
-      "quebra",
+  const { data, isLoading, isError, error, refetch } = useQuebraQuery(
+    {
       quebraDimensao,
       categorias,
       variavel,
-      rankingAno,
-      municipios,
-      rede,
-      etapa,
-    ],
-    queryFn: async () => {
-      const results = await Promise.all(
-        categorias.map(async (categoria) => {
-          const series = await fetchSeries({
-            variavel,
-            municipio: municipios.length > 0 ? municipios : undefined,
-            rede: quebraDimensao === "rede" ? categoria : rede || undefined,
-            etapa: quebraDimensao === "etapa" ? categoria : etapa || undefined,
-          });
-          const ponto = series.serie.find((s) => s.ano === rankingAno);
-          return {
-            categoria,
-            valor: ponto?.valor ?? null,
-          };
-        }),
-      );
-
-      return results.filter((r) => r.valor !== null) as Array<{
-        categoria: string;
-        valor: number;
-      }>;
+      rankingAno: rankingAno ?? 0,
+      municipio: municipios.length > 0 ? municipios : undefined,
+      rede: rede || undefined,
+      etapa: etapa || undefined,
     },
-    enabled: Boolean(
-      filtrosQuery.data && variavel && rankingAno && categorias.length > 0,
-    ),
-  });
+    {
+      enabled: Boolean(
+        filtrosQuery.data && variavel && rankingAno && categorias.length > 0,
+      ),
+    },
+  );
 
   const titulo =
     quebraDimensao === "rede"

@@ -1,9 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileUpIcon } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
-import { ApiError, uploadCsv } from "@/api/client";
+import { ApiError } from "@/api/client";
 import type { UploadResult } from "@/api/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { useUploadMutation } from "@/hooks/useApiQueries";
 import { formatNumber } from "@/lib/format";
 
 const fileSchema = z
@@ -32,18 +32,11 @@ const fileSchema = z
   .refine((file) => file.size > 0, { message: "Arquivo vazio" });
 
 export function UploadPage() {
-  const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [result, setResult] = useState<UploadResult | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: (selected: File) => uploadCsv(selected),
-    onSuccess: async (data) => {
-      setResult(data);
-      await queryClient.invalidateQueries();
-    },
-  });
+  const mutation = useUploadMutation();
 
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0] ?? null;
@@ -76,7 +69,9 @@ export function UploadPage() {
       return;
     }
 
-    mutation.mutate(parsed.data);
+    mutation.mutate(parsed.data, {
+      onSuccess: (data) => setResult(data),
+    });
   }
 
   const apiError =

@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { ApiError, fetchIndicadores } from "@/api/client";
+import { ApiError } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useIndicadoresQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import {
   formatNumber,
@@ -21,10 +21,8 @@ export function IndicatorCards() {
   const filters = useDebouncedFilters();
   const queryParams = filtersToQuery(filters);
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["indicadores", queryParams],
-    queryFn: () => fetchIndicadores(queryParams),
-  });
+  const { data, isLoading, isError, error, refetch } =
+    useIndicadoresQuery(queryParams);
 
   if (isLoading) {
     return (

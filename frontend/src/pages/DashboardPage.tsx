@@ -1,7 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ApiError, fetchFiltros } from "@/api/client";
+import { ApiError } from "@/api/client";
 import { BreakdownChart } from "@/components/BreakdownChart";
 import { DataTable } from "@/components/DataTable";
 import { FiltersBar } from "@/components/FiltersBar";
@@ -10,15 +9,12 @@ import { RankingChart } from "@/components/RankingChart";
 import { SeriesChart } from "@/components/SeriesChart";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { Button } from "@/components/ui/button";
+import { useFiltrosQuery } from "@/hooks/useApiQueries";
 import { useFiltersStore } from "@/store/filters";
 
 export function DashboardPage() {
   const hydrateFromFiltros = useFiltersStore((s) => s.hydrateFromFiltros);
-
-  const filtrosQuery = useQuery({
-    queryKey: ["filtros"],
-    queryFn: fetchFiltros,
-  });
+  const filtrosQuery = useFiltrosQuery();
 
   useEffect(() => {
     if (filtrosQuery.data) {
