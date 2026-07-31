@@ -67,7 +67,7 @@ export function FiltersFields({
       )}
     >
       <Field
-        className={stack ? "w-full" : "min-w-[11rem] flex-[2_1_11rem]"}
+        className={stack ? "w-full" : "min-w-44 flex-[2_1_11rem]"}
       >
         <Label htmlFor={id("municipios")}>Municípios</Label>
         <MunicipioMultiSelect
@@ -79,7 +79,7 @@ export function FiltersFields({
         />
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[4.5rem] flex-[0.6_1_4.5rem]"}>
+      <Field className={stack ? "w-full" : "min-w-18 flex-[0.6_1_4.5rem]"}>
         <Label htmlFor={id("ano-inicio")}>Início</Label>
         <NativeSelect
           id={id("ano-inicio")}
@@ -99,7 +99,7 @@ export function FiltersFields({
         </NativeSelect>
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[4.5rem] flex-[0.6_1_4.5rem]"}>
+      <Field className={stack ? "w-full" : "min-w-18 flex-[0.6_1_4.5rem]"}>
         <Label htmlFor={id("ano-fim")}>Fim</Label>
         <NativeSelect
           id={id("ano-fim")}
@@ -119,7 +119,7 @@ export function FiltersFields({
         </NativeSelect>
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[4.5rem] flex-[0.6_1_4.5rem]"}>
+      <Field className={stack ? "w-full" : "min-w-18 flex-[0.6_1_4.5rem]"}>
         <Label htmlFor={id("ranking-ano")}>Ano rank.</Label>
         <NativeSelect
           id={id("ranking-ano")}
@@ -139,7 +139,7 @@ export function FiltersFields({
         </NativeSelect>
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[7rem] flex-[1.2_1_7rem]"}>
+      <Field className={stack ? "w-full" : "min-w-28 flex-[1.2_1_7rem]"}>
         <Label htmlFor={id("rede")}>Rede</Label>
         <NativeSelect
           id={id("rede")}
@@ -156,7 +156,7 @@ export function FiltersFields({
         </NativeSelect>
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[8rem] flex-[1.4_1_8rem]"}>
+      <Field className={stack ? "w-full" : "min-w-32 flex-[1.4_1_8rem]"}>
         <Label htmlFor={id("etapa")}>Etapa</Label>
         <NativeSelect
           id={id("etapa")}
@@ -174,7 +174,7 @@ export function FiltersFields({
         </NativeSelect>
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[8rem] flex-[1.4_1_8rem]"}>
+      <Field className={stack ? "w-full" : "min-w-32 flex-[1.4_1_8rem]"}>
         <Label htmlFor={id("variavel")}>Variável</Label>
         <NativeSelect
           id={id("variavel")}
@@ -191,7 +191,7 @@ export function FiltersFields({
         </NativeSelect>
       </Field>
 
-      <Field className={stack ? "w-full" : "min-w-[6.5rem] flex-[1_1_6.5rem]"}>
+      <Field className={stack ? "w-full" : "min-w-26 flex-[1_1_6.5rem]"}>
         <Label htmlFor={id("quebra")}>Quebra</Label>
         <NativeSelect
           id={id("quebra")}
