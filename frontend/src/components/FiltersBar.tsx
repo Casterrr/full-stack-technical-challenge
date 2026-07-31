@@ -1,4 +1,5 @@
 import type { FiltrosResponse } from "@/api/types";
+import { MunicipioMultiSelect } from "@/components/MunicipioMultiSelect";
 import {
   Card,
   CardContent,
@@ -46,27 +47,12 @@ export function FiltersBar({ options }: { options: FiltrosResponse }) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-2">
             <Label htmlFor="filtro-municipios">Municípios</Label>
-            <select
+            <MunicipioMultiSelect
               id="filtro-municipios"
-              multiple
+              options={options.municipios}
               value={municipios}
-              onChange={(e) =>
-                setMunicipios(
-                  Array.from(e.target.selectedOptions).map((o) => o.value),
-                )
-              }
-              className="min-h-28 w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              aria-label="Municípios (múltipla seleção)"
-            >
-              {options.municipios.map((m) => (
-                <option key={m.coMun} value={m.coMun}>
-                  {m.noMun}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">
-              Vazio = todos. Segure Ctrl/Cmd para múltiplos.
-            </p>
+              onChange={setMunicipios}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
