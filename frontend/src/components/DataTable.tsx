@@ -1,10 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
-import { ApiError, fetchDados } from "../api/client";
-import { PERCENTUAL_VARIAVEIS } from "../api/types";
-import { useDebouncedFilters } from "../hooks/useDebouncedFilters";
-import { formatNumber, formatPercent } from "../lib/format";
-import { filtersToQuery, useFiltersStore } from "../store/filters";
-import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
+import { ApiError, fetchDados } from "@/api/client";
+import { PERCENTUAL_VARIAVEIS } from "@/api/types";
+import { Button } from "@/components/ui/button";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
+import { formatNumber, formatPercent } from "@/lib/format";
+import { filtersToQuery, useFiltersStore } from "@/store/filters";
+import {
+  EmptyState,
+  ErrorState,
+  InlineUpdating,
+  LoadingState,
+  Panel,
+} from "./States";
 
 export function DataTable() {
   const filters = useDebouncedFilters();
@@ -37,11 +61,7 @@ export function DataTable() {
     <Panel
       title="Tabela de dados"
       subtitle="Paginação no servidor — só o recorte atual"
-      action={
-        isFetching && !isLoading ? (
-          <span className="text-xs text-ink-muted">Atualizando…</span>
-        ) : null
-      }
+      action={isFetching && !isLoading ? <InlineUpdating /> : null}
     >
       {isLoading ? <LoadingState label="Carregando tabela…" /> : null}
       {isError ? (
@@ -62,80 +82,90 @@ export function DataTable() {
       ) : null}
 
       {data && !data.semDados && data.total > 0 ? (
-        <>
-          <div className="overflow-x-auto rounded-lg border border-line">
-            <table className="min-w-full divide-y divide-line text-left text-sm">
-              <thead className="bg-brand-soft text-ink">
-                <tr>
-                  <th className="px-3 py-2 font-medium">Município</th>
-                  <th className="px-3 py-2 font-medium">Ano</th>
-                  <th className="px-3 py-2 font-medium">Variável</th>
-                  <th className="px-3 py-2 font-medium">Rede</th>
-                  <th className="px-3 py-2 font-medium">Etapa</th>
-                  <th className="px-3 py-2 font-medium text-right">Valor</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line bg-paper-elevated">
+        <div className="space-y-4">
+          <div className="overflow-hidden rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Município</TableHead>
+                  <TableHead>Ano</TableHead>
+                  <TableHead>Variável</TableHead>
+                  <TableHead>Rede</TableHead>
+                  <TableHead>Etapa</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {data.itens.map((item) => {
                   const isPercent = PERCENTUAL_VARIAVEIS.has(item.variavel);
                   return (
-                    <tr key={item.id} className="hover:bg-paper">
-                      <td className="px-3 py-2">{item.noMun}</td>
-                      <td className="px-3 py-2 tabular-nums">{item.ano}</td>
-                      <td className="px-3 py-2">{item.variavel}</td>
-                      <td className="px-3 py-2">{item.ensinoRede}</td>
-                      <td className="px-3 py-2">{item.ensinoTipo}</td>
-                      <td className="px-3 py-2 text-right font-medium tabular-nums">
+                    <TableRow key={item.id}>
+                      <TableCell>{item.noMun}</TableCell>
+                      <TableCell className="tabular-nums">{item.ano}</TableCell>
+                      <TableCell>{item.variavel}</TableCell>
+                      <TableCell>{item.ensinoRede}</TableCell>
+                      <TableCell>{item.ensinoTipo}</TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
                         {isPercent
                           ? formatPercent(item.valor)
                           : formatNumber(item.valor)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-            <p className="text-ink-muted">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <p className="text-muted-foreground">
               {formatNumber(data.total)} registro(s) · página {data.pagina} de{" "}
               {totalPaginas}
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="flex items-center gap-2">
-                <span className="text-ink-muted">Tamanho</span>
-                <select
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Tamanho</span>
+                <NativeSelect
                   value={filters.tamanho}
                   onChange={(e) => setTamanho(Number(e.target.value))}
-                  className="rounded-md border border-line bg-paper-elevated px-2 py-1"
+                  className="w-20"
                 >
                   {[10, 20, 50, 100].map((n) => (
-                    <option key={n} value={n}>
+                    <NativeSelectOption key={n} value={n}>
                       {n}
-                    </option>
+                    </NativeSelectOption>
                   ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                disabled={filters.pagina <= 1}
-                onClick={() => setPagina(filters.pagina - 1)}
-                className="rounded-md border border-line px-3 py-1.5 font-medium hover:bg-brand-soft disabled:opacity-40"
-              >
-                Anterior
-              </button>
-              <button
-                type="button"
-                disabled={filters.pagina >= totalPaginas}
-                onClick={() => setPagina(filters.pagina + 1)}
-                className="rounded-md border border-line px-3 py-1.5 font-medium hover:bg-brand-soft disabled:opacity-40"
-              >
-                Próxima
-              </button>
+                </NativeSelect>
+              </div>
+              <Pagination className="mx-0 w-auto justify-end">
+                <PaginationContent>
+                  <PaginationItem>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={filters.pagina <= 1}
+                      onClick={() => setPagina(filters.pagina - 1)}
+                    >
+                      Anterior
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={filters.pagina >= totalPaginas}
+                      onClick={() => setPagina(filters.pagina + 1)}
+                    >
+                      Próxima
+                    </Button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           </div>
-        </>
+        </div>
       ) : null}
     </Panel>
   );

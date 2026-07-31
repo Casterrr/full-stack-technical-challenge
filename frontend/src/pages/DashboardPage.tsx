@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ApiError, fetchFiltros } from "../api/client";
-import { BreakdownChart } from "../components/BreakdownChart";
-import { DataTable } from "../components/DataTable";
-import { FiltersBar } from "../components/FiltersBar";
-import { IndicatorCards } from "../components/IndicatorCards";
-import { RankingChart } from "../components/RankingChart";
-import { SeriesChart } from "../components/SeriesChart";
-import { EmptyState, ErrorState, LoadingState } from "../components/States";
-import { useFiltersStore } from "../store/filters";
+import { ApiError, fetchFiltros } from "@/api/client";
+import { BreakdownChart } from "@/components/BreakdownChart";
+import { DataTable } from "@/components/DataTable";
+import { FiltersBar } from "@/components/FiltersBar";
+import { IndicatorCards } from "@/components/IndicatorCards";
+import { RankingChart } from "@/components/RankingChart";
+import { SeriesChart } from "@/components/SeriesChart";
+import { EmptyState, ErrorState, LoadingState } from "@/components/States";
+import { Button } from "@/components/ui/button";
+import { useFiltersStore } from "@/store/filters";
 
 export function DashboardPage() {
   const hydrateFromFiltros = useFiltersStore((s) => s.hydrateFromFiltros);
@@ -53,17 +54,16 @@ export function DashboardPage() {
   if (vazios) {
     return (
       <div className="space-y-4">
-        <h1 className="font-display text-3xl font-bold text-ink">Dashboard</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+          Dashboard
+        </h1>
         <EmptyState
           title="Nenhum dado importado"
           description="Faça o upload de um CSV válido para alimentar o dashboard."
         />
-        <Link
-          to="/"
-          className="inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
-        >
-          Ir para upload
-        </Link>
+        <Button asChild>
+          <Link to="/">Ir para upload</Link>
+        </Button>
       </div>
     );
   }
@@ -72,17 +72,16 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold text-ink">Dashboard</h1>
-          <p className="mt-1 text-ink-muted">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight">
+            Dashboard
+          </h1>
+          <p className="mt-1 text-muted-foreground">
             Indicadores agregados no servidor. Números em pt-BR.
           </p>
         </div>
-        <Link
-          to="/"
-          className="rounded-lg border border-line bg-paper-elevated px-3 py-2 text-sm font-medium text-brand hover:bg-brand-soft"
-        >
-          Novo upload
-        </Link>
+        <Button asChild variant="outline">
+          <Link to="/">Novo upload</Link>
+        </Button>
       </div>
 
       <FiltersBar options={data} />
