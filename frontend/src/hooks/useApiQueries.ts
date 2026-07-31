@@ -1,5 +1,6 @@
 import {
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -19,6 +20,14 @@ import {
   type RankingParams,
   type SeriesParams,
 } from "@/api/queryKeys";
+
+export function useFiltrosQuery(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.filtros(),
+    queryFn: fetchFiltros,
+    enabled,
+  });
+}
 
 export function useFiltrosSuspenseQuery() {
   return useSuspenseQuery({

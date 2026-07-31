@@ -25,6 +25,8 @@ interface MunicipioMultiSelectProps {
   value: string[];
   onChange: (coMuns: string[]) => void;
   id?: string;
+  /** Oculta dica/badges extras — útil no header compacto */
+  compact?: boolean;
 }
 
 export function MunicipioMultiSelect({
@@ -32,6 +34,7 @@ export function MunicipioMultiSelect({
   value,
   onChange,
   id,
+  compact = false,
 }: MunicipioMultiSelectProps) {
   const [open, setOpen] = useState(false);
 
@@ -77,7 +80,7 @@ export function MunicipioMultiSelect({
           : `${value.length} municípios`;
 
   return (
-    <div className="space-y-2">
+    <div className={cn(compact ? "min-w-0" : "space-y-2")}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -87,13 +90,19 @@ export function MunicipioMultiSelect({
             role="combobox"
             aria-expanded={open}
             aria-label="Selecionar municípios"
-            className="h-auto min-h-9 w-full justify-between px-3 py-2 font-normal"
+            className={cn(
+              "w-full justify-between px-3 font-normal",
+              compact ? "h-7 gap-1 px-2.5 text-[0.8rem]" : "h-auto min-h-9 py-2",
+            )}
           >
             <span className="truncate text-left">{triggerLabel}</span>
             <ChevronsUpDownIcon className="size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+        <PopoverContent
+          className="w-[min(20rem,var(--radix-popover-trigger-width))] min-w-[16rem] p-0"
+          align="start"
+        >
           <Command>
             <CommandInput placeholder="Buscar município…" />
             <CommandList>
@@ -146,7 +155,7 @@ export function MunicipioMultiSelect({
         </PopoverContent>
       </Popover>
 
-      {value.length > 0 && !allSelected ? (
+      {!compact && value.length > 0 && !allSelected ? (
         <div className="flex flex-wrap items-center gap-1.5">
           {value.slice(0, 4).map((code) => {
             const label =
@@ -183,11 +192,12 @@ export function MunicipioMultiSelect({
             Limpar
           </Button>
         </div>
-      ) : (
+      ) : null}
+      {!compact && (value.length === 0 || allSelected) ? (
         <p className="text-xs text-muted-foreground">
           Nenhum marcado = todos os municípios.
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

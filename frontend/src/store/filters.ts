@@ -50,7 +50,7 @@ export const useFiltersStore = create<FiltersState>((set, get) => ({
   rankingAno: null,
   quebraDimensao: "rede",
   pagina: 1,
-  tamanho: 20,
+  tamanho: 10,
 
   setMunicipios: (municipios) => set({ municipios, pagina: 1 }),
   setAnoInicio: (anoInicio) => set({ anoInicio, pagina: 1 }),

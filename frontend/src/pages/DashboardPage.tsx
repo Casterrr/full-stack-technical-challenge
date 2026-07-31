@@ -2,14 +2,12 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BreakdownChart } from "@/components/BreakdownChart";
 import { DataTable } from "@/components/DataTable";
-import { FiltersBar } from "@/components/FiltersBar";
 import { IndicatorCards } from "@/components/IndicatorCards";
 import { QuerySection } from "@/components/QuerySection";
 import { RankingChart } from "@/components/RankingChart";
 import {
   ChartSkeleton,
   DashboardHeaderSkeleton,
-  FiltersSkeleton,
   IndicatorCardsSkeleton,
   TableSkeleton,
 } from "@/components/SectionSkeletons";
@@ -26,7 +24,6 @@ export function DashboardPage() {
       fallback={
         <div className="space-y-6">
           <DashboardHeaderSkeleton />
-          <FiltersSkeleton />
           <IndicatorCardsSkeleton />
         </div>
       }
@@ -78,8 +75,6 @@ function DashboardContent() {
           <Link to="/">Novo upload</Link>
         </Button>
       </div>
-
-      <FiltersBar options={data} />
 
       <QuerySection
         title="Indicadores do recorte"
