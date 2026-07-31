@@ -14,8 +14,8 @@ O foco da avaliação é o tratamento correto dos dados reais (hierarquia de red
 
 | Camada   | Tecnologia |
 |----------|------------|
-| Backend  | Node.js, Express, TypeScript, Prisma, PostgreSQL, Zod, Multer, Vitest |
-| Frontend | React, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, Zustand, Recharts |
+| Backend  | Node.js, Express, TypeScript, Prisma, PostgreSQL, Zod, Multer, Vitest, Swagger |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, TanStack Table, Zustand, Recharts |
 | Infra    | Docker Compose (Postgres), GitHub Actions (CI backend e frontend) |
 
 ## Como rodar do zero
@@ -24,6 +24,24 @@ O foco da avaliação é o tratamento correto dos dados reais (hierarquia de red
 
 - Node.js 20+
 - Docker e Docker Compose
+
+### Variáveis de ambiente
+
+Arquivos versionados: `backend/.env.example` e `frontend/.env.example`.
+
+**Backend** (`backend/.env`):
+
+| Variável | Exemplo | Descrição |
+|----------|---------|-----------|
+| `DATABASE_URL` | `postgresql://educacao:educacao@localhost:5432/educacao_alagoas?schema=public` | Conexão Prisma/Postgres |
+| `PORT` | `3333` | Porta da API |
+| `NODE_ENV` | `development` | Ambiente |
+
+**Frontend** (`frontend/.env`):
+
+| Variável | Exemplo | Descrição |
+|----------|---------|-----------|
+| `VITE_API_URL` | _(vazio)_ | Em dev, deixe vazio para o proxy do Vite (`/api` → `localhost:3333`). Em produção, URL pública da API. |
 
 ### Backend
 
@@ -36,9 +54,9 @@ npx prisma migrate dev
 npm run dev
 ```
 
-- API: http://localhost:3333  
-- Swagger: http://localhost:3333/api/docs  
-- Health: http://localhost:3333/api/health  
+- API: http://localhost:3333
+- Swagger: http://localhost:3333/api/docs
+- Health: http://localhost:3333/api/health
 
 ### Frontend
 
@@ -53,7 +71,7 @@ npm run dev
 
 Abra http://localhost:5173 (proxy `/api` → `localhost:3333`).
 
-Arquivos de ambiente versionados: `backend/.env.example` e `frontend/.env.example`.
+Detalhes extras: [`backend/README.md`](backend/README.md) e [`frontend/README.md`](frontend/README.md).
 
 ## Decisões de tratamento dos dados
 
@@ -67,13 +85,13 @@ Estas decisões estão implementadas no backend e refletidas no dashboard:
    Somar `Escolas` por etapa conta ofertas, não o número físico de escolas.  
    **Critério:** o card é rotulado como “ofertas de ensino”, com observação na meta da API.
 
-3. **Percentuais**  
+3. **Percentuais (agregação)**  
    Não se somam. Agregação entre municípios usa **média ponderada por matrículas** (quando há matrícula na mesma dimensão). Documentado na UI e no README do backend.
 
 4. **Reimportação**  
    Um novo upload **substitui** o dataset anterior (`TRUNCATE` + insert em lote). Documentado na tela de upload e aqui.
 
-5. **Ausência ≠ zero**  
+5. **Valores ausentes (ausência ≠ zero)**  
    Ano/município sem linha não entra na série como `0`. A API devolve `semDados` / omite o ponto; a UI mostra “Sem dado no período”.
 
 6. **Combinações inválidas**  
@@ -113,7 +131,7 @@ Estas decisões estão implementadas no backend e refletidas no dashboard:
 
 ## Deploy
 
-Ainda sem deploy público. Quando houver: atualizar este README com o link.
+Sem deploy público
 
 ## Conferência (amostra)
 
