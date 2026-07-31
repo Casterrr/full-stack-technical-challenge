@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { PERCENTUAL_VARIAVEIS } from "../schemas/constants.js";
 import type { SeriesQuery } from "../schemas/queryParams.js";
+import { checkDimensionCompatibility } from "./compatibility.js";
 
 function sqlWhereFragments(filters: {
   municipio?: string[];
@@ -39,6 +40,20 @@ function sqlWhereFragments(filters: {
 }
 
 export async function getSeries(query: SeriesQuery) {
+  const compatibility = checkDimensionCompatibility({
+    variavel: query.variavel,
+    rede: query.rede,
+    etapa: query.etapa,
+  });
+
+  if (!compatibility.ok) {
+    return {
+      semDados: true as const,
+      mensagem: compatibility.mensagem,
+      serie: [] as Array<{ ano: number; valor: number }>,
+    };
+  }
+
   const isPercentual = PERCENTUAL_VARIAVEIS.has(query.variavel);
   const parts = sqlWhereFragments({
     municipio: query.municipio,

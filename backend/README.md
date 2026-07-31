@@ -55,6 +55,7 @@ npm run dev
 - **Escolas:** somatório por etapa = ofertas de ensino (não total físico).
 - **Percentuais:** média ponderada por matrículas.
 - **Ausência ≠ zero:** anos sem linha não entram na série como 0.
+- **Combinações inválidas:** API recusa recortes incompatíveis (ex.: taxa de abandono em Educação Infantil; alfabetização com rede diferente de “Não se aplica”) com mensagem explícita.
 
 ## Endpoints
 

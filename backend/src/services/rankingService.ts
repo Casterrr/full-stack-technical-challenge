@@ -2,13 +2,34 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { PERCENTUAL_VARIAVEIS } from "../schemas/constants.js";
 import type { RankingQuery } from "../schemas/queryParams.js";
+import { checkDimensionCompatibility } from "./compatibility.js";
 
 export async function getRanking(query: RankingQuery) {
+  const compatibility = checkDimensionCompatibility({
+    variavel: query.variavel,
+    rede: query.rede,
+    etapa: query.etapa,
+  });
+
+  if (!compatibility.ok) {
+    return {
+      semDados: true as const,
+      mensagem: compatibility.mensagem,
+      ranking: [] as Array<{ coMun: string; municipio: string; valor: number }>,
+    };
+  }
+
   const isPercentual = PERCENTUAL_VARIAVEIS.has(query.variavel);
   const parts: Prisma.Sql[] = [
     Prisma.sql`t.variavel = ${query.variavel}`,
     Prisma.sql`t.ano = ${query.ano}`,
   ];
+
+  if (query.municipio && query.municipio.length > 0) {
+    parts.push(
+      Prisma.sql`(t.co_mun IN (${Prisma.join(query.municipio)}) OR t.no_mun IN (${Prisma.join(query.municipio)}))`,
+    );
+  }
 
   if (query.rede) {
     parts.push(Prisma.sql`t.ensino_rede = ${query.rede}`);

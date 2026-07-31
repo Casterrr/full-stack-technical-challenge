@@ -873,6 +873,7 @@ const openApiDocument = {
         parameters: [
           { $ref: "#/components/parameters/VariavelObrigatoriaQuery" },
           { $ref: "#/components/parameters/AnoObrigatorioQuery" },
+          { $ref: "#/components/parameters/MunicipioQuery" },
           { $ref: "#/components/parameters/RedeQuery" },
           { $ref: "#/components/parameters/EtapaQuery" },
           { $ref: "#/components/parameters/LimiteQuery" },

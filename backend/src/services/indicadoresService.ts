@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { PERCENTUAL_VARIAVEIS } from "../schemas/constants.js";
 import type { IndicadoresQuery } from "../schemas/queryParams.js";
+import { checkDimensionCompatibility } from "./compatibility.js";
 import { buildWhere } from "./filtrosService.js";
 
 function toNumber(value: Prisma.Decimal | number | null | undefined): number | null {
@@ -170,8 +171,8 @@ export async function getIndicadores(query: IndicadoresQuery) {
   const [
     totalMatriculas,
     totalEscolasOfertas,
-    taxaAprovacao,
-    taxaAbandono,
+    taxaAprovacaoRaw,
+    taxaAbandonoRaw,
     variacaoMatriculas,
   ] = await Promise.all([
     sumVariavel(where, "Matrícula"),
@@ -181,12 +182,29 @@ export async function getIndicadores(query: IndicadoresQuery) {
     yearOverYearVariation(where, "Matrícula"),
   ]);
 
+  const taxaAprovacaoOk = checkDimensionCompatibility({
+    variavel: "Taxa de Aprovação",
+    rede: query.rede,
+    etapa: query.etapa,
+  });
+  const taxaAbandonoOk = checkDimensionCompatibility({
+    variavel: "Taxa de Abandono",
+    rede: query.rede,
+    etapa: query.etapa,
+  });
+
+  const avisos: string[] = [];
+  if (!taxaAprovacaoOk.ok) avisos.push(taxaAprovacaoOk.mensagem);
+  if (!taxaAbandonoOk.ok && taxaAbandonoOk.mensagem !== avisos[0]) {
+    avisos.push(taxaAbandonoOk.mensagem);
+  }
+
   return {
     semDados: false as const,
     totalMatriculas,
     totalEscolasOfertas,
-    taxaAprovacao,
-    taxaAbandono,
+    taxaAprovacao: taxaAprovacaoOk.ok ? taxaAprovacaoRaw : null,
+    taxaAbandono: taxaAbandonoOk.ok ? taxaAbandonoRaw : null,
     variacaoMatriculas,
     meta: {
       rede: query.rede ?? null,
@@ -196,6 +214,7 @@ export async function getIndicadores(query: IndicadoresQuery) {
       observacaoPercentuais:
         "Taxas usam média ponderada por matrículas quando possível.",
       percentualVariaveis: [...PERCENTUAL_VARIAVEIS],
+      avisos: avisos.length > 0 ? avisos : undefined,
     },
   };
 }

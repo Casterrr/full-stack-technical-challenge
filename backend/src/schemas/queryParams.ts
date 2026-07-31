@@ -53,6 +53,7 @@ export const seriesQuerySchema = z.object({
 export const rankingQuerySchema = z.object({
   variavel: z.string().min(1, "variavel é obrigatória"),
   ano: z.coerce.number().int({ message: "ano é obrigatório" }),
+  municipio: optionalString,
   rede: redeComDefault,
   etapa: optionalSingle,
   limite: z.coerce.number().int().positive().max(200).default(20),
