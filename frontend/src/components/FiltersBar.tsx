@@ -35,7 +35,7 @@ export function FiltersBar({ options }: { options: FiltrosResponse }) {
   } = useFiltersStore();
 
   return (
-    <Card>
+    <Card className="sticky top-(--app-header-height) z-20 max-h-[calc(100dvh-var(--app-header-height)-0.75rem)] overflow-y-auto border-border/80 bg-card/95 shadow-md backdrop-blur-md supports-backdrop-filter:bg-card/90">
       <CardHeader>
         <CardTitle className="font-heading text-lg">Filtros globais</CardTitle>
         <CardDescription>

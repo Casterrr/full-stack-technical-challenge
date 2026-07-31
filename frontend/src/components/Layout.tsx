@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 export function Layout() {
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-border/80 bg-card/90 backdrop-blur">
+    <div className="min-h-screen [--app-header-height:8.25rem] sm:[--app-header-height:5rem]">
+      <header className="sticky top-0 z-30 border-b border-border/80 bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div>
             <p className="font-heading text-xl font-semibold tracking-tight text-primary sm:text-2xl">
