@@ -1,5 +1,4 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
   type ChartConfig,
@@ -9,10 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useFiltrosQuery, useQuebraQuery } from "@/hooks/useApiQueries";
+import {
+  useFiltrosSuspenseQuery,
+  useQuebraSuspenseQuery,
+} from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
-import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
+import { EmptyState, Panel } from "./States";
 
 const REDES_FOLHA = new Set([
   "Estadual",
@@ -40,7 +42,60 @@ export function BreakdownChart() {
     rankingAno,
     quebraDimensao,
   } = useDebouncedFilters();
+
+  const titulo =
+    quebraDimensao === "rede"
+      ? "Quebra por rede de ensino"
+      : "Quebra por etapa de ensino";
+
+  if (!rankingAno) {
+    return (
+      <Panel title={titulo} subtitle="Selecione o ano do ranking / quebra">
+        <EmptyState
+          title="Ano não selecionado"
+          description="Escolha o ano do ranking / quebra nos filtros."
+        />
+      </Panel>
+    );
+  }
+
+  return (
+    <BreakdownChartContent
+      municipios={municipios}
+      variavel={variavel}
+      rede={rede}
+      etapa={etapa}
+      rankingAno={rankingAno}
+      quebraDimensao={quebraDimensao}
+      titulo={titulo}
+    />
+  );
+}
+
+function BreakdownChartContent({
+  municipios,
+  variavel,
+  rede,
+  etapa,
+  rankingAno,
+  quebraDimensao,
+  titulo,
+}: {
+  municipios: string[];
+  variavel: string;
+  rede: string;
+  etapa: string;
+  rankingAno: number;
+  quebraDimensao: "rede" | "etapa";
+  titulo: string;
+}) {
   const isPercent = PERCENTUAL_VARIAVEIS.has(variavel);
+  const { data: filtros } = useFiltrosSuspenseQuery();
+
+  const categorias =
+    quebraDimensao === "rede"
+      ? filtros.redes.filter((r) => REDES_FOLHA.has(r))
+      : filtros.etapas.filter((e) => ETAPAS_BASICAS.has(e));
 
   const chartConfig = {
     valor: {
@@ -49,116 +104,145 @@ export function BreakdownChart() {
     },
   } satisfies ChartConfig;
 
-  const filtrosQuery = useFiltrosQuery();
-
-  const categorias =
-    quebraDimensao === "rede"
-      ? (filtrosQuery.data?.redes ?? []).filter((r) => REDES_FOLHA.has(r))
-      : (filtrosQuery.data?.etapas ?? []).filter((e) => ETAPAS_BASICAS.has(e));
-
-  const { data, isLoading, isError, error, refetch } = useQuebraQuery(
-    {
-      quebraDimensao,
-      categorias,
-      variavel,
-      rankingAno: rankingAno ?? 0,
-      municipio: municipios.length > 0 ? municipios : undefined,
-      rede: rede || undefined,
-      etapa: etapa || undefined,
-    },
-    {
-      enabled: Boolean(
-        filtrosQuery.data && variavel && rankingAno && categorias.length > 0,
-      ),
-    },
-  );
-
-  const titulo =
-    quebraDimensao === "rede"
-      ? "Quebra por rede de ensino"
-      : "Quebra por etapa de ensino";
+  if (categorias.length === 0) {
+    return (
+      <Panel
+        title={titulo}
+        subtitle={`“${variavel}” em ${rankingAno}`}
+      >
+        <EmptyState
+          title="Sem categorias"
+          description="Não há categorias disponíveis para esta quebra."
+        />
+      </Panel>
+    );
+  }
 
   return (
-    <Panel
-      title={titulo}
-      subtitle={
-        rankingAno
-          ? `“${variavel}” em ${rankingAno} (Total/Pública omitidas na quebra por rede)`
-          : "Selecione o ano do ranking / quebra"
-      }
-    >
-      {!rankingAno ? (
-        <EmptyState
-          title="Ano não selecionado"
-          description="Escolha o ano do ranking / quebra nos filtros."
-        />
-      ) : null}
-      {rankingAno && (isLoading || filtrosQuery.isLoading) ? (
-        <LoadingState label="Carregando quebra…" />
-      ) : null}
-      {isError || filtrosQuery.isError ? (
-        <ErrorState
-          message={
-            error instanceof ApiError
-              ? error.message
-              : filtrosQuery.error instanceof ApiError
-                ? filtrosQuery.error.message
-                : "Falha ao buscar quebra"
-          }
-          onRetry={() => {
-            void filtrosQuery.refetch();
-            void refetch();
-          }}
-        />
-      ) : null}
-      {data && data.length === 0 ? (
+    <BreakdownBars
+      chartConfig={chartConfig}
+      titulo={titulo}
+      variavel={variavel}
+      rankingAno={rankingAno}
+      quebraDimensao={quebraDimensao}
+      isPercent={isPercent}
+      params={{
+        quebraDimensao,
+        categorias,
+        variavel,
+        rankingAno,
+        municipio: municipios.length > 0 ? municipios : undefined,
+        rede: rede || undefined,
+        etapa: etapa || undefined,
+      }}
+    />
+  );
+}
+
+function BreakdownBars({
+  chartConfig,
+  titulo,
+  variavel,
+  rankingAno,
+  quebraDimensao,
+  isPercent,
+  params,
+}: {
+  chartConfig: ChartConfig;
+  titulo: string;
+  variavel: string;
+  rankingAno: number;
+  quebraDimensao: "rede" | "etapa";
+  isPercent: boolean;
+  params: {
+    quebraDimensao: "rede" | "etapa";
+    categorias: string[];
+    variavel: string;
+    rankingAno: number;
+    municipio?: string[];
+    rede?: string;
+    etapa?: string;
+  };
+}) {
+  const { data } = useQuebraSuspenseQuery(params);
+
+  if (data.length === 0) {
+    return (
+      <Panel
+        title={titulo}
+        subtitle={`“${variavel}” em ${rankingAno} (Total/Pública omitidas na quebra por rede)`}
+      >
         <EmptyState
           title="Sem dado no período"
           description="Nenhuma categoria retornou valor para este recorte."
         />
-      ) : null}
-      {data && data.length > 0 ? (
-        <ChartContainer config={chartConfig} className="aspect-auto h-80 w-full">
-          <BarChart
-            accessibilityLayer
-            data={data}
-            margin={{ top: 8, right: 12, left: 4, bottom: 48 }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="categoria"
-              interval={0}
-              angle={-25}
-              textAnchor="end"
-              height={70}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 11 }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={64}
-              tickFormatter={(v: number) =>
-                isPercent ? formatPercent(v, 1) : formatNumber(v)
-              }
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value) =>
-                    isPercent
-                      ? formatPercent(Number(value))
-                      : formatNumber(Number(value))
-                  }
-                />
-              }
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-            <Bar dataKey="valor" fill="var(--color-valor)" radius={4} />
-          </BarChart>
-        </ChartContainer>
-      ) : null}
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel
+      title={titulo}
+      subtitle={`“${variavel}” em ${rankingAno} (Total/Pública omitidas na quebra por rede)`}
+    >
+      <ChartContainer config={chartConfig} className="aspect-auto h-80 w-full">
+        <BarChart
+          accessibilityLayer
+          data={data}
+          margin={{ top: 8, right: 12, left: 12, bottom: 56 }}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="categoria"
+            interval={0}
+            angle={-25}
+            textAnchor="end"
+            height={70}
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 11 }}
+            label={{
+              value:
+                quebraDimensao === "rede"
+                  ? "Rede de ensino"
+                  : "Etapa de ensino",
+              position: "insideBottom",
+              offset: -2,
+              fill: "var(--muted-foreground)",
+              fontSize: 12,
+            }}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            width={72}
+            tickFormatter={(v: number) =>
+              isPercent ? formatPercent(v, 1) : formatNumber(v)
+            }
+            label={{
+              value: variavel,
+              angle: -90,
+              position: "insideLeft",
+              offset: 4,
+              fill: "var(--muted-foreground)",
+              fontSize: 12,
+            }}
+          />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                formatter={(value) =>
+                  isPercent
+                    ? formatPercent(Number(value))
+                    : formatNumber(Number(value))
+                }
+              />
+            }
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+          <Bar dataKey="valor" fill="var(--color-valor)" radius={4} />
+        </BarChart>
+      </ChartContainer>
     </Panel>
   );
 }

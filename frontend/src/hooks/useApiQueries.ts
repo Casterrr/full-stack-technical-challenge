@@ -1,4 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
   fetchDados,
   fetchFiltros,
@@ -16,54 +20,43 @@ import {
   type SeriesParams,
 } from "@/api/queryKeys";
 
-export function useFiltrosQuery() {
-  return useQuery({
+export function useFiltrosSuspenseQuery() {
+  return useSuspenseQuery({
     queryKey: queryKeys.filtros(),
     queryFn: fetchFiltros,
   });
 }
 
-export function useIndicadoresQuery(params: IndicadoresParams) {
-  return useQuery({
+export function useIndicadoresSuspenseQuery(params: IndicadoresParams) {
+  return useSuspenseQuery({
     queryKey: queryKeys.indicadores(params),
     queryFn: () => fetchIndicadores(params),
   });
 }
 
-export function useSeriesQuery(
-  params: SeriesParams,
-  options?: { enabled?: boolean },
-) {
-  return useQuery({
+export function useSeriesSuspenseQuery(params: SeriesParams) {
+  return useSuspenseQuery({
     queryKey: queryKeys.series(params),
     queryFn: () => fetchSeries(params),
-    enabled: options?.enabled ?? Boolean(params.variavel),
   });
 }
 
-export function useRankingQuery(
-  params: RankingParams,
-  options?: { enabled?: boolean },
-) {
-  return useQuery({
+export function useRankingSuspenseQuery(params: RankingParams) {
+  return useSuspenseQuery({
     queryKey: queryKeys.ranking(params),
     queryFn: () => fetchRanking(params),
-    enabled: options?.enabled ?? Boolean(params.variavel && params.ano),
   });
 }
 
-export function useDadosQuery(params: DadosParams) {
-  return useQuery({
+export function useDadosSuspenseQuery(params: DadosParams) {
+  return useSuspenseQuery({
     queryKey: queryKeys.dados(params),
     queryFn: () => fetchDados(params),
   });
 }
 
-export function useQuebraQuery(
-  params: QuebraParams,
-  options?: { enabled?: boolean },
-) {
-  return useQuery({
+export function useQuebraSuspenseQuery(params: QuebraParams) {
+  return useSuspenseQuery({
     queryKey: queryKeys.quebra(params),
     queryFn: async () => {
       const results = await Promise.all(
@@ -93,13 +86,6 @@ export function useQuebraQuery(
         valor: number;
       }>;
     },
-    enabled:
-      options?.enabled ??
-      Boolean(
-        params.variavel &&
-          params.rankingAno &&
-          params.categorias.length > 0,
-      ),
   });
 }
 

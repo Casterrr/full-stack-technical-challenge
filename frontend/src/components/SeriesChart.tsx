@@ -1,5 +1,4 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import {
   type ChartConfig,
@@ -9,11 +8,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useSeriesQuery } from "@/hooks/useApiQueries";
+import { useSeriesSuspenseQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { filtersToQuery } from "@/store/filters";
-import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
+import { EmptyState, Panel } from "./States";
 
 export function SeriesChart() {
   const filters = useDebouncedFilters();
@@ -27,86 +26,98 @@ export function SeriesChart() {
     },
   } satisfies ChartConfig;
 
-  const { data, isLoading, isError, error, refetch } = useSeriesQuery({
+  const { data } = useSeriesSuspenseQuery({
     variavel: filters.variavel,
     ...base,
   });
+
+  if (data.semDados || data.serie.length === 0) {
+    return (
+      <Panel
+        title="Série temporal"
+        subtitle={`Evolução de “${filters.variavel}” ao longo dos anos`}
+      >
+        <EmptyState
+          title="Sem dado no período"
+          description={
+            data.mensagem ??
+            "Não há pontos na série para este recorte. Ausência não é preenchida com zero."
+          }
+        />
+      </Panel>
+    );
+  }
 
   return (
     <Panel
       title="Série temporal"
       subtitle={`Evolução de “${filters.variavel}” ao longo dos anos`}
     >
-      {isLoading ? <LoadingState label="Carregando série…" /> : null}
-      {isError ? (
-        <ErrorState
-          message={
-            error instanceof ApiError ? error.message : "Falha ao buscar série"
-          }
-          onRetry={() => void refetch()}
-        />
-      ) : null}
-      {data?.semDados || (data && data.serie.length === 0) ? (
-        <EmptyState
-          title="Sem dado no período"
-          description={
-            data?.mensagem ??
-            "Não há pontos na série para este recorte. Ausência não é preenchida com zero."
-          }
-        />
-      ) : null}
-      {data && !data.semDados && data.serie.length > 0 ? (
-        <div className="space-y-2">
-          <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
-            <LineChart
-              accessibilityLayer
-              data={data.serie}
-              margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
-            >
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="ano"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={64}
-                tickFormatter={(v: number) =>
-                  isPercent ? formatPercent(v, 1) : formatNumber(v)
-                }
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) =>
-                      isPercent
-                        ? formatPercent(Number(value))
-                        : formatNumber(Number(value))
-                    }
-                  />
-                }
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Line
-                type="monotone"
-                dataKey="valor"
-                stroke="var(--color-valor)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-                connectNulls={false}
-              />
-            </LineChart>
-          </ChartContainer>
-          {data.meta?.agregacao ? (
-            <p className="text-xs text-muted-foreground">
-              Agregação: {data.meta.agregacao.replaceAll("_", " ")}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="space-y-2">
+        <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
+          <LineChart
+            accessibilityLayer
+            data={data.serie}
+            margin={{ top: 8, right: 12, left: 12, bottom: 28 }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="ano"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              label={{
+                value: "Ano",
+                position: "insideBottom",
+                offset: -16,
+                fill: "var(--muted-foreground)",
+                fontSize: 12,
+              }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              width={72}
+              tickFormatter={(v: number) =>
+                isPercent ? formatPercent(v, 1) : formatNumber(v)
+              }
+              label={{
+                value: filters.variavel,
+                angle: -90,
+                position: "insideLeft",
+                offset: 4,
+                fill: "var(--muted-foreground)",
+                fontSize: 12,
+              }}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) =>
+                    isPercent
+                      ? formatPercent(Number(value))
+                      : formatNumber(Number(value))
+                  }
+                />
+              }
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+            <Line
+              type="monotone"
+              dataKey="valor"
+              stroke="var(--color-valor)"
+              strokeWidth={2.5}
+              dot={{ r: 3 }}
+              connectNulls={false}
+            />
+          </LineChart>
+        </ChartContainer>
+        {data.meta?.agregacao ? (
+          <p className="text-xs text-muted-foreground">
+            Agregação: {data.meta.agregacao.replaceAll("_", " ")}
+          </p>
+        ) : null}
+      </div>
     </Panel>
   );
 }

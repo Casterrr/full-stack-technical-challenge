@@ -103,6 +103,7 @@ export async function fetchSeries(params: {
 export async function fetchRanking(params: {
   variavel: string;
   ano: number;
+  municipio?: string[];
   rede?: string;
   etapa?: string;
   limite?: number;

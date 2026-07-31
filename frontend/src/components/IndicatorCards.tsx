@@ -1,4 +1,3 @@
-import { ApiError } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -7,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useIndicadoresQuery } from "@/hooks/useApiQueries";
+import { useIndicadoresSuspenseQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import {
   formatNumber,
@@ -15,43 +14,20 @@ import {
   formatSignedPercent,
 } from "@/lib/format";
 import { filtersToQuery } from "@/store/filters";
-import { EmptyState, ErrorState, LoadingState, Panel } from "./States";
+import { EmptyState, Panel } from "./States";
 
 export function IndicatorCards() {
   const filters = useDebouncedFilters();
   const queryParams = filtersToQuery(filters);
+  const { data } = useIndicadoresSuspenseQuery(queryParams);
 
-  const { data, isLoading, isError, error, refetch } =
-    useIndicadoresQuery(queryParams);
-
-  if (isLoading) {
-    return (
-      <Panel title="Indicadores do recorte">
-        <LoadingState label="Calculando indicadores…" />
-      </Panel>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Panel title="Indicadores do recorte">
-        <ErrorState
-          message={
-            error instanceof ApiError ? error.message : "Falha ao buscar cards"
-          }
-          onRetry={() => void refetch()}
-        />
-      </Panel>
-    );
-  }
-
-  if (!data || data.semDados) {
+  if (data.semDados) {
     return (
       <Panel title="Indicadores do recorte">
         <EmptyState
           title="Sem dado no período"
           description={
-            data?.mensagem ??
+            data.mensagem ??
             "Nenhum indicador disponível para o recorte selecionado."
           }
         />
@@ -123,6 +99,11 @@ export function IndicatorCards() {
           </Card>
         ))}
       </div>
+      {data.meta.avisos && data.meta.avisos.length > 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          {data.meta.avisos.join(" · ")}
+        </p>
+      ) : null}
     </Panel>
   );
 }

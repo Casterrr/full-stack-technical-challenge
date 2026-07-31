@@ -1,4 +1,3 @@
-import { ApiError } from "@/api/client";
 import { PERCENTUAL_VARIAVEIS } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,17 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useDadosQuery } from "@/hooks/useApiQueries";
+import { useDadosSuspenseQuery } from "@/hooks/useApiQueries";
 import { useDebouncedFilters } from "@/hooks/useDebouncedFilters";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { filtersToQuery, useFiltersStore } from "@/store/filters";
-import {
-  EmptyState,
-  ErrorState,
-  InlineUpdating,
-  LoadingState,
-  Panel,
-} from "./States";
+import { EmptyState, InlineUpdating, Panel } from "./States";
 
 export function DataTable() {
   const filters = useDebouncedFilters();
@@ -36,44 +29,29 @@ export function DataTable() {
   const setTamanho = useFiltersStore((s) => s.setTamanho);
   const base = filtersToQuery(filters);
 
-  const { data, isLoading, isError, error, refetch, isFetching } = useDadosQuery(
-    {
-      ...base,
-      variavel: filters.variavel || undefined,
-      pagina: filters.pagina,
-      tamanho: filters.tamanho,
-    },
-  );
+  const { data, isFetching } = useDadosSuspenseQuery({
+    ...base,
+    variavel: filters.variavel || undefined,
+    pagina: filters.pagina,
+    tamanho: filters.tamanho,
+  });
 
-  const totalPaginas = data
-    ? Math.max(1, Math.ceil(data.total / data.tamanho))
-    : 1;
+  const totalPaginas = Math.max(1, Math.ceil(data.total / data.tamanho));
 
   return (
     <Panel
       title="Tabela de dados"
       subtitle="Paginação no servidor — só o recorte atual"
-      action={isFetching && !isLoading ? <InlineUpdating /> : null}
+      action={isFetching ? <InlineUpdating /> : null}
     >
-      {isLoading ? <LoadingState label="Carregando tabela…" /> : null}
-      {isError ? (
-        <ErrorState
-          message={
-            error instanceof ApiError ? error.message : "Falha ao buscar dados"
-          }
-          onRetry={() => void refetch()}
-        />
-      ) : null}
-      {data?.semDados || (data && data.total === 0) ? (
+      {data.semDados || data.total === 0 ? (
         <EmptyState
           title="Sem dado no período"
           description={
-            data?.mensagem ?? "Nenhuma linha para o recorte selecionado."
+            data.mensagem ?? "Nenhuma linha para o recorte selecionado."
           }
         />
-      ) : null}
-
-      {data && !data.semDados && data.total > 0 ? (
+      ) : (
         <div className="space-y-4">
           <div className="overflow-hidden rounded-lg border">
             <Table>
@@ -158,7 +136,7 @@ export function DataTable() {
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </Panel>
   );
 }

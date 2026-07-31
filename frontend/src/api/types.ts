@@ -35,6 +35,7 @@ export interface IndicadoresResponse {
     etapa: string | null;
     observacaoEscolas: string;
     observacaoPercentuais: string;
+    avisos?: string[];
   };
 }
 

@@ -81,6 +81,19 @@ export function UploadPage() {
         ? "Falha inesperada no upload"
         : null;
 
+  const apiErrorDetails =
+    mutation.error instanceof ApiError ? mutation.error.details : undefined;
+
+  function formatApiDetails(details: unknown): string | null {
+    if (details === undefined || details === null) return null;
+    if (typeof details === "string") return details;
+    try {
+      return JSON.stringify(details, null, 2);
+    } catch {
+      return String(details);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
@@ -132,8 +145,15 @@ export function UploadPage() {
 
             {apiError ? (
               <Alert variant="destructive">
-                <AlertTitle>Erro da API</AlertTitle>
-                <AlertDescription>{apiError}</AlertDescription>
+                <AlertTitle>Erro da API ({mutation.error instanceof ApiError ? mutation.error.status : "—"})</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>{apiError}</p>
+                  {formatApiDetails(apiErrorDetails) ? (
+                    <pre className="max-h-40 overflow-auto rounded-md border border-destructive/20 bg-background/60 p-2 text-xs whitespace-pre-wrap">
+                      {formatApiDetails(apiErrorDetails)}
+                    </pre>
+                  ) : null}
+                </AlertDescription>
               </Alert>
             ) : null}
           </form>

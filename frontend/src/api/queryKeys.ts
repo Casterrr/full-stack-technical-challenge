@@ -28,6 +28,7 @@ export type SeriesParams = {
 export type RankingParams = {
   variavel: string;
   ano: number;
+  municipio?: string[];
   rede?: string;
   etapa?: string;
   limite?: number;

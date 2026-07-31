@@ -1,51 +1,50 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ApiError } from "@/api/client";
 import { BreakdownChart } from "@/components/BreakdownChart";
 import { DataTable } from "@/components/DataTable";
 import { FiltersBar } from "@/components/FiltersBar";
 import { IndicatorCards } from "@/components/IndicatorCards";
+import { QuerySection } from "@/components/QuerySection";
 import { RankingChart } from "@/components/RankingChart";
+import {
+  ChartSkeleton,
+  DashboardHeaderSkeleton,
+  FiltersSkeleton,
+  IndicatorCardsSkeleton,
+  TableSkeleton,
+} from "@/components/SectionSkeletons";
 import { SeriesChart } from "@/components/SeriesChart";
-import { EmptyState, ErrorState, LoadingState } from "@/components/States";
+import { EmptyState } from "@/components/States";
 import { Button } from "@/components/ui/button";
-import { useFiltrosQuery } from "@/hooks/useApiQueries";
+import { useFiltrosSuspenseQuery } from "@/hooks/useApiQueries";
 import { useFiltersStore } from "@/store/filters";
 
 export function DashboardPage() {
+  return (
+    <QuerySection
+      title="Dashboard"
+      fallback={
+        <div className="space-y-6">
+          <DashboardHeaderSkeleton />
+          <FiltersSkeleton />
+          <IndicatorCardsSkeleton />
+        </div>
+      }
+    >
+      <DashboardContent />
+    </QuerySection>
+  );
+}
+
+function DashboardContent() {
   const hydrateFromFiltros = useFiltersStore((s) => s.hydrateFromFiltros);
-  const filtrosQuery = useFiltrosQuery();
+  const { data } = useFiltrosSuspenseQuery();
 
   useEffect(() => {
-    if (filtrosQuery.data) {
-      hydrateFromFiltros(
-        filtrosQuery.data.anos,
-        filtrosQuery.data.redes,
-        filtrosQuery.data.variaveis,
-      );
-    }
-  }, [filtrosQuery.data, hydrateFromFiltros]);
+    hydrateFromFiltros(data.anos, data.redes, data.variaveis);
+  }, [data, hydrateFromFiltros]);
 
-  if (filtrosQuery.isLoading) {
-    return <LoadingState label="Carregando filtros…" />;
-  }
-
-  if (filtrosQuery.isError) {
-    return (
-      <ErrorState
-        message={
-          filtrosQuery.error instanceof ApiError
-            ? filtrosQuery.error.message
-            : "Não foi possível carregar os filtros"
-        }
-        onRetry={() => void filtrosQuery.refetch()}
-      />
-    );
-  }
-
-  const data = filtrosQuery.data;
-  const vazios =
-    !data || data.municipios.length === 0 || data.anos.length === 0;
+  const vazios = data.municipios.length === 0 || data.anos.length === 0;
 
   if (vazios) {
     return (
@@ -81,13 +80,57 @@ export function DashboardPage() {
       </div>
 
       <FiltersBar options={data} />
-      <IndicatorCards />
+
+      <QuerySection
+        title="Indicadores do recorte"
+        fallback={<IndicatorCardsSkeleton />}
+      >
+        <IndicatorCards />
+      </QuerySection>
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <SeriesChart />
-        <RankingChart />
+        <QuerySection
+          title="Série temporal"
+          fallback={
+            <ChartSkeleton
+              title="Série temporal"
+              subtitle="Carregando série…"
+            />
+          }
+        >
+          <SeriesChart />
+        </QuerySection>
+
+        <QuerySection
+          title="Comparação entre municípios"
+          fallback={
+            <ChartSkeleton
+              title="Comparação entre municípios"
+              subtitle="Carregando ranking…"
+              heightClass="h-80"
+            />
+          }
+        >
+          <RankingChart />
+        </QuerySection>
       </div>
-      <BreakdownChart />
-      <DataTable />
+
+      <QuerySection
+        title="Quebra dimensional"
+        fallback={
+          <ChartSkeleton
+            title="Quebra por dimensão"
+            subtitle="Carregando quebra…"
+            heightClass="h-80"
+          />
+        }
+      >
+        <BreakdownChart />
+      </QuerySection>
+
+      <QuerySection title="Tabela de dados" fallback={<TableSkeleton />}>
+        <DataTable />
+      </QuerySection>
     </div>
   );
 }
