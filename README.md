@@ -9,32 +9,35 @@ Aplicação web que recebe um CSV de dados educacionais por upload, processa no 
 | Camada   | Situação | Detalhes |
 |----------|----------|----------|
 | Backend  | Feito    | API REST completa: upload, validação, agregações SQL e paginação |
-| Frontend | Pendente | React + TypeScript + Vite + Tailwind (ainda não iniciado) |
+| Frontend | Feito    | Upload + dashboard (filtros, cards, gráficos Recharts, tabela paginada) |
 
 ## Stack
 
 | Camada   | Tecnologia |
 |----------|------------|
 | Backend  | Node.js, Express, TypeScript, Prisma, PostgreSQL, Zod, Multer, Vitest |
-| Frontend | React + TypeScript, Vite, Tailwind CSS *(planejado)* |
-| Infra    | Docker Compose (Postgres), GitHub Actions (CI do backend) |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, React Query, Zustand, Recharts |
+| Infra    | Docker Compose (Postgres), GitHub Actions (CI backend e frontend) |
 
 ## Estrutura do repositório
 
 ```
 .
 ├── backend/                 # API REST
-│   ├── prisma/              # Schema e migrations
+│   ├── prisma/
 │   ├── src/
-│   │   ├── routes/          # Endpoints
-│   │   ├── services/        # Parse CSV, importação e agregações
-│   │   ├── schemas/         # Validação Zod
-│   │   └── ...
-│   ├── tests/               # Testes do parser
-│   └── README.md            # Detalhes de setup e decisões de dados
-├── .github/workflows/       # CI do backend
+│   ├── tests/
+│   └── README.md
+├── frontend/                # SPA React
+│   ├── src/
+│   │   ├── api/             # Cliente HTTP tipado
+│   │   ├── components/      # Filtros, cards, gráficos, tabela
+│   │   ├── pages/           # Upload e Dashboard
+│   │   └── store/           # Filtros (Zustand)
+│   └── README.md
+├── .github/workflows/       # CI backend e frontend
 ├── educacao_alagoas_amostra.csv
-└── REQUISITOS.md            # Enunciado expandido
+└── REQUISITOS.md
 ```
 
 ## Backend (concluído)
@@ -67,7 +70,7 @@ npm run dev
 - Health: http://localhost:3333/api/health  
 - Swagger: http://localhost:3333/api/docs  
 
-Detalhes, scripts e decisões de dados: [backend/README.md](./backend/README.md).
+Detalhes: [backend/README.md](./backend/README.md).
 
 ### Endpoints
 
@@ -81,13 +84,31 @@ Detalhes, scripts e decisões de dados: [backend/README.md](./backend/README.md)
 | `GET` | `/api/ranking?variavel=&ano=` | Ranking por município |
 | `GET` | `/api/dados?pagina=&tamanho=` | Tabela paginada no servidor |
 
-## Frontend (próximo passo)
+## Frontend (concluído)
 
-Dashboard em React + Vite + Tailwind consumindo a API acima:
+### O que já existe
 
-- Upload do CSV
-- Filtros (município, ano, rede, etapa)
-- Cards de indicadores, gráfico de série, ranking e tabela paginada
+- Tela de **upload** com validação Zod, loading e resumo da importação
+- **Dashboard** com filtros globais (Zustand + debounce)
+- Cards de indicadores, série temporal, ranking e quebra (rede/etapa)
+- Tabela com paginação no servidor
+- Proxy Vite `/api` → `http://localhost:3333`
+- CI (typecheck + build)
+
+### Como rodar
+
+Com o backend ativo:
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Abra http://localhost:5173
+
+Detalhes: [frontend/README.md](./frontend/README.md).
 
 ## Dados
 
