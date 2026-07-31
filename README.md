@@ -103,7 +103,6 @@ Estas decisões estão implementadas no backend e refletidas no dashboard:
 |------|--------|
 | Deploy público (Vercel/Render) | Tempo priorizado no núcleo (upload + agregação correta). Pode ser feito depois. |
 | Mapas coropléticos / escolas INEP | Enriquecimento opcional; a app precisa funcionar só com o CSV. |
-| CI com Postgres real | CI roda lint, testes do parser e build; endpoints não sobem banco no Actions. |
 
 ## Estrutura
 
