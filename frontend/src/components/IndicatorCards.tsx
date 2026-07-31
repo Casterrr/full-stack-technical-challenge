@@ -99,10 +99,14 @@ export function IndicatorCards() {
           </Card>
         ))}
       </div>
+      
       {data.meta.avisos && data.meta.avisos.length > 0 ? (
-        <p className="mt-3 text-xs text-muted-foreground">
-          {data.meta.avisos.join(" · ")}
-        </p>
+        <>
+          <p className="mt-3 text-xs font-medium tracking-wide uppercase bg-yellow-200">Avisos:</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {data.meta.avisos.join(" · ")}
+          </p>
+        </>
       ) : null}
     </Panel>
   );
