@@ -1,6 +1,6 @@
 # Frontend — Educação Alagoas
 
-React + TypeScript + Vite + Tailwind CSS. Consome a API em `backend/`.
+React + TypeScript + Vite + Tailwind CSS + **shadcn/ui**. Consome a API em `backend/`.
 
 ## Como rodar
 
@@ -30,15 +30,25 @@ O Vite faz proxy de `/api` para `http://localhost:3333`.
 | `npm run build` | Typecheck + build |
 | `npm run preview` | Preview do build |
 
+## UI (shadcn)
+
+Componentes em `src/components/ui/`:
+
+- Button, Card, Input, Label, Native Select
+- Alert, Badge, Empty, Skeleton, Spinner, Separator
+- Table, Pagination
+- **Chart** (`ChartContainer`, `ChartTooltip`, `ChartLegend`) sobre Recharts
+
+Tema unificado via tokens CSS (`--primary`, `--chart-*`, etc.) em `src/index.css` — paleta teal alinhada ao produto.
+
 ## Telas
 
-1. **Upload** — envia CSV (`multipart/form-data`), mostra loading, resumo e erros 400
-2. **Dashboard** — filtros globais, cards, 3 gráficos (série, ranking, quebra), tabela paginada
+1. **Upload** (`/`) — CSV com loading, resumo e erros
+2. **Dashboard** (`/dashboard`) — filtros, cards, 3 gráficos shadcn/Recharts, tabela paginada
 
-## Decisões de UI / dados
+## Decisões
 
 - Filtros em Zustand; queries com React Query + debounce 350 ms
-- Rede padrão alinhada ao backend: `Total`
+- Rede padrão: `Total`
 - Quebra por rede usa só redes folha (sem Total/Pública)
 - Números e percentuais em pt-BR
-- Estados de loading / vazio / erro em cada bloco
